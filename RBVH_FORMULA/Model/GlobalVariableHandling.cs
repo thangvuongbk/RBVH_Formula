@@ -8,5 +8,13 @@ namespace RBVH_FORMULA.Model
 {
     class GlobalVariableHandling
     {
+        public struct OutComeValue
+        {
+            public int outComePosition;
+            public string outComeName;
+            public string outComeFormula;
+        };
+
+        
     }
 }
