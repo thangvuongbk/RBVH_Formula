@@ -48,8 +48,7 @@ namespace RBVH_FORMULA.Control
             cSourceCode = strSavetFileNew; // Update the source code file
             //var l_lines = File.ReadAllLines(cSourceCode); 
             string[] l_lines = File.ReadAllLines(cSourceCode);
-            
-            
+                        
             g_OutComeValue = new Model.GlobalVariableHandling.OutComeValue[l_lines.Length];
             g_IfElseDetectedForIfAndOpenBracket = new Model.GlobalVariableHandling.IfElseDetected[l_lines.Length];
             g_IfElseDetectedForClosedBracket = new Model.GlobalVariableHandling.IfElseDetected[l_lines.Length];
@@ -82,14 +81,12 @@ namespace RBVH_FORMULA.Control
                         log += "\n[StatementHandling][Error] Error when trying to divide statement in: " + l_lines[l_iCount] + " -->at: " + l_iCount + Environment.NewLine + "Please do a check";
                         return false;
                     }                    
-
+                    //
                     l_iStatement++;
                 }
                 ///
                 /// Check IF ELSE condition
-                ///
-                //else if (l_lines[l_iCount].Contains(IFELSEBRANCH[0]) || l_lines[l_iCount].Contains(IFELSEBRANCH[1]) || l_lines[l_iCount].Contains(IFELSEBRANCH[2])
-                //    || l_lines[l_iCount].Contains(IFELSEBRANCH[3]) || l_lines[l_iCount].Contains(IFELSEBRANCH[4]))
+                ///                   
                 else
                 {
                     // This is to detect the if else condition and other
@@ -133,22 +130,7 @@ namespace RBVH_FORMULA.Control
                             if(g_Branch == 0)
                             {
                                 g_Level++;
-                            }
-                            //if (g_IfElseDetectedForClosedBracket[l_iClosedBracket].IfElseLevelDetection == g_Level.ToString() + IFELSELOOP[0]) // if this equal to 1a, 1b,1c, ...branch shall be broken
-                            //{
-                            //    g_Level++; // Icrease the branch for the new one
-                            //    g_Branch = 0; // Reset the level for the new branch
-                            //}
-                            //else if (l_iClosedBracket >= 1) // check if current level == previous level? increase the level
-                            //{
-                            //    if (g_IfElseDetectedForClosedBracket[l_iClosedBracket].IfElseLevelDetection == g_IfElseDetectedForClosedBracket[l_iClosedBracket - 1].IfElseLevelDetection)
-                            //    {
-                            //        g_IfElseDetectedForClosedBracket[l_iClosedBracket].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[0];
-                            //        g_Branch =  0;
-                            //        g_Level++; // increase the level for the new branch
-                            //    }
-                            //}
-                            //
+                            }                            
                             l_iClosedBracket++;
                         }
                         catch (Exception exp)
@@ -181,14 +163,7 @@ namespace RBVH_FORMULA.Control
                         {
                             g_IfElseDetectedForElseIf[l_iElseIf].IfElseLineNo = l_iCount + 1;
                             g_IfElseDetectedForElseIf[l_iElseIf].IfElseContent = l_lines[l_iCount].ToString();
-                            g_IfElseDetectedForElseIf[l_iElseIf].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[g_Branch];
-                            // Check
-                            //if (g_IfElseDetectedForClosedBracket[l_iClosedBracket - 1].IfElseLevelDetection == g_Level.ToString() + IFELSELOOP[g_Branch - 1])
-                            //{
-                            //    g_Branch = 0; // reset the level and branch is taken care in the above code    
-                            //    g_IfElseDetectedForElseIf[l_iElseIf].IfElseLevelDetection = (g_Level+1).ToString() + IFELSELOOP[g_Branch];
-                            //}
-                            //
+                            g_IfElseDetectedForElseIf[l_iElseIf].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[g_Branch];                            
                             g_Branch++;
                             l_iElseIf++;
                         }
@@ -200,12 +175,29 @@ namespace RBVH_FORMULA.Control
                         }
 
                     }
-                }
-                //else if (l_lines[l_iCount].Contains(@"^\s+$[\r\n]*")) // blank line
-                //{
-                //    log += "\nThis line is blank";
-                //}
+                }               
             }
+            ///
+            /// Handle the formula
+            ///
+            for (int iLocal = 0; iLocal < g_OutComeValue.Length; iLocal++) // calculate the formula for individual outcome
+            {
+                if (g_OutComeValue[iLocal].outComeName == " ")
+                {
+                    break;
+                }
+                ///
+                for (int iLocal1 = g_OutComeValue[iLocal].outComePosition; iLocal1 >= 1; iLocal1--)
+                {
+                    
+                }
+            }
+
+
+
+
+
+
 
             return true;
         }
