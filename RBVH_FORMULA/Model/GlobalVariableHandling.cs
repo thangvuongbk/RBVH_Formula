@@ -14,7 +14,13 @@ namespace RBVH_FORMULA.Model
             public string outComeName;
             public string outComeFormula;
         };
-
+        public struct IfElseDetected
+        {
+            public int IfElseLineNo;
+            public string IfElseContent;
+            public string IfElseLevelDetection;           
+        };
+       
         
     }
 }

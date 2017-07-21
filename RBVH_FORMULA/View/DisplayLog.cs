@@ -49,11 +49,17 @@ namespace RBVH_FORMULA.View
         private void RBVHMain(object sender, EventArgs e)
         {
             string g_log = null;
+            bool bResult = false;   
             RBVH_FORMULA.Control.FormulaProcess l_ControlProcess = new Control.FormulaProcess();
-            l_ControlProcess.StatementHandling(@"C:\Users\VV81HC\Documents\new_4.h", ref g_log);
+            bResult = l_ControlProcess.StatementHandling(@"C:\Users\VV81HC\Documents\new_4.h", ref g_log);
             DEBUG(g_log);
             DEBUG("-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*");
-            DEBUG("Done");
+            if (bResult)
+            {
+                DEBUG("Done Successufly");
+            }
+            else DEBUG("Done With Error. Please check");
+
         }
     }
 }
