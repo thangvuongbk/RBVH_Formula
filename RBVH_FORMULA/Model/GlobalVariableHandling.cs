@@ -18,7 +18,8 @@ namespace RBVH_FORMULA.Model
         {
             public int IfElseLineNo;
             public string IfElseContent;
-            public string IfElseLevelDetection;           
+            public string IfElseLevelDetection;
+        //    public int intLevel;
         };
        
         

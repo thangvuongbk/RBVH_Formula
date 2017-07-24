@@ -51,7 +51,8 @@ namespace RBVH_FORMULA.View
             string g_log = null;
             bool bResult = false;   
             RBVH_FORMULA.Control.FormulaProcess l_ControlProcess = new Control.FormulaProcess();
-            bResult = l_ControlProcess.StatementHandling(@"C:\Users\VV81HC\Documents\new_4.h", ref g_log);
+            bResult = l_ControlProcess.StatementHandling(@"C:\Users\VV81HC\Documents\new_4.h", ref g_log); //D:\THANGVUONG\Tool_2015\FORMULA_ESS2\FORMULA_ESS2\bin\Release\123.c
+           // bResult = l_ControlProcess.StatementHandling(@"C:\Users\VV81HC\Documents\Visual Studio 2013\Projects\RBVH_FORMULA\RBVH_FORMULA\123.c", ref g_log);
             DEBUG(g_log);
             DEBUG("-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*");
             if (bResult)

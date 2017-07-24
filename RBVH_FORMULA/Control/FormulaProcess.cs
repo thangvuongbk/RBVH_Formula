@@ -17,6 +17,7 @@ namespace RBVH_FORMULA.Control
         public int g_Branch = 0;
         public List<string> IFELSESPECIAL = new List<string>() { "if", "{", "else if", "}", "else" };
         RBVH_FORMULA.Model.GlobalVariableHandling.OutComeValue[] g_OutComeValue;
+        RBVH_FORMULA.Model.GlobalVariableHandling.OutComeValue[] g_OutComeValueFinal;
         RBVH_FORMULA.Model.GlobalVariableHandling.IfElseDetected[] g_IfElseDetectedForIfAndOpenBracket;
         RBVH_FORMULA.Model.GlobalVariableHandling.IfElseDetected[] g_IfElseDetectedForClosedBracket;
         RBVH_FORMULA.Model.GlobalVariableHandling.IfElseDetected[] g_IfElseDetectedForElseIf;
@@ -105,10 +106,13 @@ namespace RBVH_FORMULA.Control
                     {
                         try
                         {
-                            g_IfElseDetectedForIfAndOpenBracket[l_iIfAndOpenBracket].IfElseLineNo = l_iCount + 1;
-                            g_IfElseDetectedForIfAndOpenBracket[l_iIfAndOpenBracket].IfElseContent = l_lines[l_iCount].ToString();
-                            g_IfElseDetectedForIfAndOpenBracket[l_iIfAndOpenBracket].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[g_Branch];
-                            l_iIfAndOpenBracket++;
+                            //g_IfElseDetectedForIfAndOpenBracket[l_iIfAndOpenBracket].IfElseLineNo = l_iCount + 1;
+                            //g_IfElseDetectedForIfAndOpenBracket[l_iIfAndOpenBracket].IfElseContent = l_lines[l_iCount].ToString();
+                            //g_IfElseDetectedForIfAndOpenBracket[l_iIfAndOpenBracket].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[g_Branch];
+                            g_IfElseDetectedForIfAndOpenBracket[l_iCount].IfElseLineNo = l_iCount + 1;
+                            g_IfElseDetectedForIfAndOpenBracket[l_iCount].IfElseContent = l_lines[l_iCount].ToString();
+                            g_IfElseDetectedForIfAndOpenBracket[l_iCount].IfElseLevelDetection = IFELSELOOP[g_Branch].ToString();
+                         //   l_iIfAndOpenBracket++;
                             //g_Level++;
                             g_Branch++;
                         }
@@ -124,14 +128,17 @@ namespace RBVH_FORMULA.Control
                         try
                         {
                             g_Branch--; // if detected this one, that means one block is to be closed
-                            g_IfElseDetectedForClosedBracket[l_iClosedBracket].IfElseLineNo = l_iCount + 1;
-                            g_IfElseDetectedForClosedBracket[l_iClosedBracket].IfElseContent = l_lines[l_iCount].ToString();
-                            g_IfElseDetectedForClosedBracket[l_iClosedBracket].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[g_Branch];
+                            //g_IfElseDetectedForClosedBracket[l_iClosedBracket].IfElseLineNo = l_iCount + 1;
+                            //g_IfElseDetectedForClosedBracket[l_iClosedBracket].IfElseContent = l_lines[l_iCount].ToString();
+                            //g_IfElseDetectedForClosedBracket[l_iClosedBracket].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[g_Branch];
+                            g_IfElseDetectedForClosedBracket[l_iCount].IfElseLineNo = l_iCount + 1;
+                            g_IfElseDetectedForClosedBracket[l_iCount].IfElseContent = l_lines[l_iCount].ToString();
+                            g_IfElseDetectedForClosedBracket[l_iCount].IfElseLevelDetection = IFELSELOOP[g_Branch].ToString();
                             if(g_Branch == 0)
                             {
                                 g_Level++;
                             }                            
-                            l_iClosedBracket++;
+                            //l_iClosedBracket++;
                         }
                         catch (Exception exp)
                         {
@@ -144,11 +151,14 @@ namespace RBVH_FORMULA.Control
                     {
                         try
                         {                            
-                            g_IfElseDetectedForElse[l_iElse].IfElseLineNo = l_iCount + 1;
-                            g_IfElseDetectedForElse[l_iElse].IfElseContent = l_lines[l_iCount].ToString();
-                            g_IfElseDetectedForElse[l_iElse].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[g_Branch];
+                            //g_IfElseDetectedForElse[l_iElse].IfElseLineNo = l_iCount + 1;
+                            //g_IfElseDetectedForElse[l_iElse].IfElseContent = l_lines[l_iCount].ToString();
+                            //g_IfElseDetectedForElse[l_iElse].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[g_Branch];
+                            g_IfElseDetectedForElse[l_iCount].IfElseLineNo = l_iCount + 1;
+                            g_IfElseDetectedForElse[l_iCount].IfElseContent = l_lines[l_iCount].ToString();
+                            g_IfElseDetectedForElse[l_iCount].IfElseLevelDetection = IFELSELOOP[g_Branch].ToString();
                             g_Branch++;
-                            l_iElse++;
+                          //  l_iElse++;
                         }
                         catch (Exception exp)
                         {
@@ -161,11 +171,14 @@ namespace RBVH_FORMULA.Control
                     {
                         try
                         {
-                            g_IfElseDetectedForElseIf[l_iElseIf].IfElseLineNo = l_iCount + 1;
-                            g_IfElseDetectedForElseIf[l_iElseIf].IfElseContent = l_lines[l_iCount].ToString();
-                            g_IfElseDetectedForElseIf[l_iElseIf].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[g_Branch];                            
+                        //    g_IfElseDetectedForElseIf[l_iElseIf].IfElseLineNo = l_iCount + 1;
+                        //    g_IfElseDetectedForElseIf[l_iElseIf].IfElseContent = l_lines[l_iCount].ToString();
+                            //g_IfElseDetectedForElseIf[l_iElseIf].IfElseLevelDetection = g_Level.ToString() + IFELSELOOP[g_Branch];                            
+                            g_IfElseDetectedForElseIf[l_iCount].IfElseLineNo = l_iCount + 1;
+                            g_IfElseDetectedForElseIf[l_iCount].IfElseContent = l_lines[l_iCount].ToString();
+                            g_IfElseDetectedForElseIf[l_iCount].IfElseLevelDetection = IFELSELOOP[g_Branch].ToString();    
                             g_Branch++;
-                            l_iElseIf++;
+                            //l_iElseIf++;
                         }
                         catch (Exception exp)
                         {
@@ -180,28 +193,194 @@ namespace RBVH_FORMULA.Control
             ///
             /// Handle the formula
             ///
+            int iOutComeValueFinal = 0;
+            bool bPreElseDetected = false;
+            string currentLevel = "A";
+            string previousLevel = "K";
+            string strPreviousOutCome = " ";
+            g_OutComeValueFinal = new Model.GlobalVariableHandling.OutComeValue[g_OutComeValue.Length];
             for (int iLocal = 0; iLocal < g_OutComeValue.Length; iLocal++) // calculate the formula for individual outcome
             {
-                if (g_OutComeValue[iLocal].outComeName == " ")
+                if (g_OutComeValue[iLocal].outComeName == " " || g_OutComeValue[iLocal].outComeName == null || g_OutComeValue[iLocal].outComeName == string.Empty)
                 {
-                    break;
+                    log += "\n[StatementHandling][info] Done at line: " + g_OutComeValue[iLocal - 1].outComePosition.ToString();
+                    return true; // end of the outcome value
+                    //break;
                 }
+                
+                g_OutComeValueFinal[iOutComeValueFinal].outComeName = g_OutComeValue[iLocal].outComeName;
+                g_OutComeValueFinal[iOutComeValueFinal].outComePosition = g_OutComeValue[iLocal].outComePosition;
+                // Get the previous value of current outcome in the first met
+                if (iOutComeValueFinal > 0)
+                {
+                    for (int i = (iOutComeValueFinal - 1); i >= 0; i--)
+                    {
+                        if (g_OutComeValueFinal[i].outComeName == g_OutComeValueFinal[iOutComeValueFinal].outComeName)
+                        {
+                            //strPreviousOutCome = g_OutComeValueFinal[i].outComeFormula;
+                            strPreviousOutCome = g_OutComeValueFinal[i].outComePosition.ToString(); // get the position first
+                            //i = -1; // out of the loop
+                            log += "\n[StatementHandling][info] Get the last value of outcome variable: " + g_OutComeValueFinal[iOutComeValueFinal].outComeName.ToString() +
+                                " at: " + strPreviousOutCome;
+                            break;
+                        }
+                    }
+                }
+                /// A < B < C < D < E < F< G < H < I < J
                 ///
-                for (int iLocal1 = g_OutComeValue[iLocal].outComePosition; iLocal1 >= 1; iLocal1--)
+                if (strPreviousOutCome == " ")
                 {
-                    
+                    g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = g_OutComeValue[iLocal].outComeFormula + ", " + "IntialValue";
                 }
+                else
+                {
+                    g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = g_OutComeValue[iLocal].outComeFormula + ", " + "Line_" + strPreviousOutCome; 
+                }
+                //
+                for (int iLocal1 = g_OutComeValue[iLocal].outComePosition - 1; iLocal1 >=  0; iLocal1--)
+                {   
+                    ///
+                    /// Case 1: Detected the "}" and level contain "A"
+                    /// 
+                    if ((previousLevel == "A"))
+                    {
+                        g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "=" + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula;
+                        break;
+                    }
+                    else if ((l_lines[iLocal1].Contains("}") && g_IfElseDetectedForClosedBracket[iLocal1].IfElseLevelDetection == "A")) // for handling the else in level A
+                    {
+                        g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = g_OutComeValue[iLocal].outComeFormula;
+                        break;
+                    }
+                    else if (l_lines[iLocal1].Trim().Contains("}"))
+                    {
+                        currentLevel = g_IfElseDetectedForClosedBracket[iLocal1].IfElseLevelDetection;
+                        if (string.Compare(currentLevel, previousLevel) < 0)
+                        {
+                            previousLevel = currentLevel; // update the level e.x C -> B                           
+                        }
+                        
+                    }
+                    ///
+                    /// Case 2: Detected the one of the conditions
+                    /// 
+                   else if(l_lines[iLocal1].Contains("else") && l_lines[iLocal1 + 1].Contains("{") && !l_lines[iLocal1].Contains("else if"))
+                    {
+                        bPreElseDetected = true;
+                        currentLevel = g_IfElseDetectedForElse[iLocal1].IfElseLevelDetection;
+                        //
+                        if (currentLevel == "A")
+                       {
+                           for (int i = iLocal1; i >= 0; i--)
+                           {
+                               if(g_IfElseDetectedForIfAndOpenBracket[i].IfElseLevelDetection == "A")
+                               {
+                                   g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForIfAndOpenBracket[i].IfElseContent + " = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                                   break;
+                               }
+                               else if(g_IfElseDetectedForElseIf[i].IfElseLevelDetection == "A")
+                               {
+                                   g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForElseIf[i].IfElseContent + " = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                                   break;
+                               }
+                               
+                           }
+                       }
+                       //
+                        if (string.Compare(currentLevel, previousLevel) >= 0)
+                        {
+                            // do not update the formula
+                            bPreElseDetected = false;
+                        }
+                        else
+                        {
+                            previousLevel = currentLevel; // update the level e.x C -> B                           
+                        }
+
+                    }
+                    else if (l_lines[iLocal1].Contains("else if") && l_lines[iLocal1 + 1].Contains("{") && l_lines[iLocal1 - 1].Contains("}"))
+                    {
+                        currentLevel = g_IfElseDetectedForElseIf[iLocal1].IfElseLevelDetection;
+
+                        if (currentLevel == previousLevel && bPreElseDetected == true) // else if and else the same level
+                        {
+                            g_IfElseDetectedForElseIf[iLocal1].IfElseContent = conditionStatementProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent);
+                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForElseIf[iLocal1].IfElseContent + " = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                            bPreElseDetected = false;
+                        }
+                        else if (string.Compare(currentLevel, previousLevel) < 0) // if this line has the higher level e.x C-> B
+                        {
+                            g_IfElseDetectedForElseIf[iLocal1].IfElseContent = conditionStatementProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent);
+                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForElseIf[iLocal1].IfElseContent + " = TRUE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                            previousLevel = currentLevel;
+                        }
+
+                    }
+                    else if (l_lines[iLocal1].Contains("if") && l_lines[iLocal1 + 1].Contains("{") && !l_lines[iLocal1].Contains("else if"))
+                    {
+
+                        currentLevel = g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseLevelDetection;
+
+                        if (currentLevel == previousLevel && bPreElseDetected == true) // else if and else the same level
+                        {
+                            g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = conditionStatementProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent);
+                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent + " = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                            bPreElseDetected = false;
+                        }
+                        else if (string.Compare(currentLevel, previousLevel) < 0) // if this line has the higher level e.x C-> B
+                        {
+                            g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = conditionStatementProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent);
+                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent + " = TRUE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                            previousLevel = currentLevel;
+                        }
+                       
+                    }
+
+                    // Case 3: else that belonged to the first of line
+                    else
+                    {
+                        // do nothing
+                     //   g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = g_OutComeValue[iLocal].outComeFormula;
+                    }                    
+                }
+                //
+                currentLevel = "A";
+                previousLevel = "K";
+                strPreviousOutCome = " ";
+                iOutComeValueFinal++;                
             }
-
-
-
-
-
 
 
             return true;
         }
+
         /**************************************************************************
+        *  Decsription: Handle the string from the condition
+        *     Input: string statement
+        *     Output: - if condition needs to be handle
+        *             - else if condition needs to be handle
+        *             - else condition to be handled
+        ****************************************************************************/
+        static string conditionStatementProcess(string strCondition)
+        {
+            StringBuilder l_strCondition = new StringBuilder(strCondition);
+            List<string> conditionSpecialList = new List<string>()           {"else if","else","if","true" ,"false","=="}; // to be updated follow the next version
+            List<string> conditionSpecialListReplaced = new List<string>()   {   ""    , ""   , "" , "TRUE","FALSE","="}; // to be updated follow the next version
+
+            for (int i = 0; i < conditionSpecialList.Count; i++)
+            {
+                if(strCondition.Contains(conditionSpecialList[i]))
+                {
+                    l_strCondition.Replace(conditionSpecialList[i], conditionSpecialListReplaced[i]);
+                }
+            }
+
+
+            return l_strCondition.ToString();
+        }
+
+
+      /**************************************************************************
       *  Decsription:
       *     Input: .txt or .c file
       *     Output: - Number
