@@ -1,15 +1,22 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace RBVH_FORMULA.Control
 {
     class FormulaProcess
-    {        
+    {
+        const string LOCAL_VARIABLE = "LOCAL VARIABLES";
+        const string TCNo_NAME = "TC No.";
+        const string OUTPUT_NAME = "OUTPUTS";
+        const int TCNAME_COLUMN = 1;
+
         static string CurrentPath = Directory.GetCurrentDirectory();
         static string strSavetFileNew = CurrentPath + @"\ELOC.c";
         public List<char> IFELSELOOP = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' }; // just support for 10 if-else loops currently
@@ -22,20 +29,20 @@ namespace RBVH_FORMULA.Control
         RBVH_FORMULA.Model.GlobalVariableHandling.IfElseDetected[] g_IfElseDetectedForClosedBracket;
         RBVH_FORMULA.Model.GlobalVariableHandling.IfElseDetected[] g_IfElseDetectedForElseIf;
         RBVH_FORMULA.Model.GlobalVariableHandling.IfElseDetected[] g_IfElseDetectedForElse;
-
+        
 
         RBVH_FORMULA.View.DisplayLog g_View = new View.DisplayLog();                     
         ///
         ///
         ///
-        public bool StatementHandling(string cSourceCode, ref string log)
+        public bool StatementHandling(Excel.Workbook xlWB, string sheetName, string cSourceCode, ref string log)
         {
             int l_iCount = 0;
             int l_iStatement = 0;
-            int l_iIfAndOpenBracket = 0;
-            int l_iClosedBracket = 0;
-            int l_iElse = 0;
-            int l_iElseIf = 0;
+            //int l_iIfAndOpenBracket = 0;
+            //int l_iClosedBracket = 0;
+            //int l_iElse = 0;
+            //int l_iElseIf = 0;
             string l_saveCodeAsString = null;
                                                                      
             // Remove all the comment firstly but still keep the format, no removing the line              
@@ -204,8 +211,9 @@ namespace RBVH_FORMULA.Control
                 if (g_OutComeValue[iLocal].outComeName == " " || g_OutComeValue[iLocal].outComeName == null || g_OutComeValue[iLocal].outComeName == string.Empty)
                 {
                     log += "\n[StatementHandling][info] Done at line: " + g_OutComeValue[iLocal - 1].outComePosition.ToString();
-                    return true; // end of the outcome value
-                    //break;
+                    //return true; // end of the outcome value
+                    iLocal = g_OutComeValue.Length; // to terminate
+                    break;
                 }
                 
                 g_OutComeValueFinal[iOutComeValueFinal].outComeName = g_OutComeValue[iLocal].outComeName;
@@ -228,15 +236,10 @@ namespace RBVH_FORMULA.Control
                 }
                 /// A < B < C < D < E < F< G < H < I < J
                 ///
-                if (strPreviousOutCome == " ")
-                {
-                    g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = g_OutComeValue[iLocal].outComeFormula + ", " + "IntialValue";
-                }
-                else
-                {
-                    g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = g_OutComeValue[iLocal].outComeFormula + ", " + "Line_" + strPreviousOutCome; 
-                }
-                //
+                g_OutComeValue[iLocal].outComeFormula = StatementProcess(g_OutComeValue[iLocal].outComeFormula);
+                g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = strPreviousOutCome == " " ? g_OutComeValue[iLocal].outComeFormula + ", " + "IntialValue" : g_OutComeValue[iLocal].outComeFormula + ", " + "Line_" + strPreviousOutCome;
+                
+                ///
                 for (int iLocal1 = g_OutComeValue[iLocal].outComePosition - 1; iLocal1 >=  0; iLocal1--)
                 {   
                     ///
@@ -244,15 +247,17 @@ namespace RBVH_FORMULA.Control
                     /// 
                     if ((previousLevel == "A"))
                     {
-                        g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "=" + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula;
+                        g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "'=" + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula;
                         break;
                     }
                     else if ((l_lines[iLocal1].Contains("}") && g_IfElseDetectedForClosedBracket[iLocal1].IfElseLevelDetection == "A")) // for handling the else in level A
                     {
+                        previousLevel = g_IfElseDetectedForClosedBracket[iLocal1].IfElseLevelDetection; // it have to level "A"
+                        g_OutComeValue[iLocal].outComeFormula = StatementProcess(g_OutComeValue[iLocal].outComeFormula);
                         g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = g_OutComeValue[iLocal].outComeFormula;
                         break;
                     }
-                    else if (l_lines[iLocal1].Trim().Contains("}"))
+                    else if (l_lines[iLocal1].Trim().Contains("}")) // handle for "}" inside the loop
                     {
                         currentLevel = g_IfElseDetectedForClosedBracket[iLocal1].IfElseLevelDetection;
                         if (string.Compare(currentLevel, previousLevel) < 0)
@@ -304,13 +309,13 @@ namespace RBVH_FORMULA.Control
 
                         if (currentLevel == previousLevel && bPreElseDetected == true) // else if and else the same level
                         {
-                            g_IfElseDetectedForElseIf[iLocal1].IfElseContent = conditionStatementProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent);
+                            g_IfElseDetectedForElseIf[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent);
                             g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForElseIf[iLocal1].IfElseContent + " = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                             bPreElseDetected = false;
                         }
                         else if (string.Compare(currentLevel, previousLevel) < 0) // if this line has the higher level e.x C-> B
                         {
-                            g_IfElseDetectedForElseIf[iLocal1].IfElseContent = conditionStatementProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent);
+                            g_IfElseDetectedForElseIf[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent);
                             g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForElseIf[iLocal1].IfElseContent + " = TRUE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                             previousLevel = currentLevel;
                         }
@@ -323,13 +328,13 @@ namespace RBVH_FORMULA.Control
 
                         if (currentLevel == previousLevel && bPreElseDetected == true) // else if and else the same level
                         {
-                            g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = conditionStatementProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent);
+                            g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent);
                             g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent + " = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                             bPreElseDetected = false;
                         }
                         else if (string.Compare(currentLevel, previousLevel) < 0) // if this line has the higher level e.x C-> B
                         {
-                            g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = conditionStatementProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent);
+                            g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent);
                             g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent + " = TRUE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                             previousLevel = currentLevel;
                         }
@@ -344,11 +349,18 @@ namespace RBVH_FORMULA.Control
                     }                    
                 }
                 //
+                g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = previousLevel == "A" ? g_OutComeValueFinal[iOutComeValueFinal].outComeFormula : "'=" + g_OutComeValue[iLocal].outComeFormula;
+                //
                 currentLevel = "A";
                 previousLevel = "K";
                 strPreviousOutCome = " ";
                 iOutComeValueFinal++;                
             }
+            ///
+            /// Write the result to excel file
+            /// 
+            bool bCheckExcelReturn = WriteResult2Excel(xlWB, sheetName, g_OutComeValueFinal, ref log);
+            if (bCheckExcelReturn == false) return false;
 
 
             return true;
@@ -361,7 +373,7 @@ namespace RBVH_FORMULA.Control
         *             - else if condition needs to be handle
         *             - else condition to be handled
         ****************************************************************************/
-        static string conditionStatementProcess(string strCondition)
+        static string ConditionProcess(string strCondition)
         {
             StringBuilder l_strCondition = new StringBuilder(strCondition);
             List<string> conditionSpecialList = new List<string>()           {"else if","else","if","true" ,"false","=="}; // to be updated follow the next version
@@ -377,6 +389,113 @@ namespace RBVH_FORMULA.Control
 
 
             return l_strCondition.ToString();
+        }
+
+
+        /**************************************************************************
+        *  Decsription: Handle the string from the statement
+        *     Input: string statement: 
+         *      C/ESDL Code    ---->     Excel code
+         *      A.max(B)                MAX(A,B)
+         *      A.min(B)                MIN(A,B)
+         *      A.getAt(B)              Not Possible
+         * 
+        *     Output: - if condition needs to be handle
+        *             - else if condition needs to be handle
+        *             - else condition to be handled
+        ****************************************************************************/
+        static string StatementProcess(string strCondition)
+        {
+            StringBuilder l_strCondition = new StringBuilder(strCondition);
+            List<string> conditionSpecialList = new List<string>()          { "true", "false", "==" }; // to be updated follow the next version
+            List<string> conditionSpecialListReplaced = new List<string>()  { "TRUE", "FALSE", "=" }; // to be updated follow the next version
+
+            for (int i = 0; i < conditionSpecialList.Count; i++)
+            {
+                if (strCondition.Contains(conditionSpecialList[i]))
+                {
+                    l_strCondition.Replace(conditionSpecialList[i], conditionSpecialListReplaced[i]);
+                }
+            }
+
+
+            return l_strCondition.ToString();
+        }
+
+        /**************************************************************************
+      *  Decsription: Write the result to excel file
+      *     Input: Final Outcome formula
+      *     Output: - this shall be written into LOCAL VARIABLES afterwards
+      *****************************************************************************/
+
+        static Boolean WriteResult2Excel(Excel.Workbook xlWB, string sheetName, RBVH_FORMULA.Model.GlobalVariableHandling.OutComeValue[] g_OutComeValueFinal, ref string log)
+        {
+            int iTCRow = 0;
+            int iLocalVariableColumn = 0;
+            int iOutput = 0;
+
+            /// Get the sheet name
+            Excel.Worksheet xlWS;
+            try
+            {
+                xlWS = (Excel.Worksheet)xlWB.Worksheets.get_Item(sheetName);
+            }
+            catch (Exception exp)
+            {
+                log += "\n[Error][SourceFile] The sheet name is not found -> shoud have " + sheetName + Environment.NewLine + exp.Message;
+                return false;
+            }
+            xlWS.Activate();
+            /// Find the INPUT row
+            /// 
+            // Check the INPUTS world column is exsit or not
+            iTCRow = ClsCommonSupportFunction.FindRowAll(xlWB, sheetName, TCNAME_COLUMN, TCNo_NAME, 1, ref log);
+            if (iTCRow < 0)
+            {
+                log += "\n[Error][WriteResult2Excel] Not Found the " + TCNo_NAME + " in the sheet name " + sheetName.ToString() + Environment.NewLine +
+                            "Please check it manually";
+                return false;
+            }
+            // Check the CSIS Customer column is exsit or not
+            iLocalVariableColumn = ClsCommonSupportFunction.FindColAll(xlWB, sheetName, iTCRow, LOCAL_VARIABLE, 1, ref log);
+            if (iLocalVariableColumn < 0)
+            {
+                log += "\n[Error][WriteResult2Excel] Not Found the " + LOCAL_VARIABLE + " in the sheet name " + sheetName.ToString() + Environment.NewLine +
+                            "Please check it manually";
+                return false;
+            }
+
+            Excel.Range rResultFill = xlWS.Cells[iTCRow, iLocalVariableColumn + 1];
+            // Write the content to excel file
+            for (int iResult = 0; iResult < g_OutComeValueFinal.Length - 1; iResult++)
+            {
+                if(g_OutComeValueFinal[iResult].outComeName == "" || g_OutComeValueFinal[iResult].outComeName == null)
+                {
+                    // do nothing
+                }
+                else
+                {
+                    try
+                    {
+                        rResultFill = xlWS.Cells[iTCRow, iLocalVariableColumn + 1 + iResult];
+                        rResultFill.EntireColumn.Insert(XlInsertShiftDirection.xlShiftToRight); // insert a colmn
+                        xlWS.Cells[iTCRow + 1, iLocalVariableColumn + iResult] = g_OutComeValueFinal[iResult].outComeName.ToString() + " (Line " + g_OutComeValueFinal[iResult].outComePosition.ToString() + ")"; // write the outcome name
+                        xlWS.Cells[iTCRow + 2, iLocalVariableColumn + iResult] = g_OutComeValueFinal[iResult].outComeFormula.ToString(); // write the formula in the next row
+                    }
+                    catch(Exception msg)
+                    {
+                        log += "\n[Error][WriteResult2Excel] Error when writing line " + g_OutComeValueFinal[iResult].outComePosition.ToString() + " With OutComeName: " + g_OutComeValueFinal[iResult].outComeName.ToString()
+                                  + Environment.NewLine + "Formula is: " + g_OutComeValueFinal[iResult].outComeFormula.ToString() + Environment.NewLine + " Please check it manually";
+                        return false;
+                    }
+                }
+                
+            }            
+            // release the worksheet
+            object oMissing = System.Reflection.Missing.Value;
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(xlWS);
+            xlWS = null;
+            return true;
         }
 
 
