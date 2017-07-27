@@ -21,7 +21,17 @@ namespace RBVH_FORMULA.Model
             public string IfElseLevelDetection;
         //    public int intLevel;
         };
-       
+        public struct ConditionLevelDetected
+        {
+            public int position;
+            public int level;
+        };
+
+        public struct GetStringBlock
+        {
+            public string content;
+            public int level;
+        }
         
     }
 }

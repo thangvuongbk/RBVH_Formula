@@ -18,7 +18,7 @@ namespace RBVH_FORMULA.Control
         const int TCNAME_COLUMN = 1;
 
         static string CurrentPath = Directory.GetCurrentDirectory();
-        static string strSavetFileNew = CurrentPath + @"\ELOC.c";
+        static string strSavetFileNew = CurrentPath + @"\CodeAdjusted.c";
         public List<char> IFELSELOOP = new List<char>() { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' }; // just support for 10 if-else loops currently
         public int g_Level = 1;
         public int g_Branch = 0;
@@ -56,6 +56,13 @@ namespace RBVH_FORMULA.Control
             cSourceCode = strSavetFileNew; // Update the source code file
             //var l_lines = File.ReadAllLines(cSourceCode); 
             string[] l_lines = File.ReadAllLines(cSourceCode);
+            // Handle the line
+            // DEBUG
+           
+            // l_lines = conditionInALine(l_lines);
+           // strSavetFileNew = l_lines.ToString();
+
+
                         
             g_OutComeValue = new Model.GlobalVariableHandling.OutComeValue[l_lines.Length];
             g_IfElseDetectedForIfAndOpenBracket = new Model.GlobalVariableHandling.IfElseDetected[l_lines.Length];
@@ -69,7 +76,9 @@ namespace RBVH_FORMULA.Control
             {
                 //l_iCount++;
                 // Detect the statement by checking below conditions
-               l_lines[l_iCount] = l_lines[l_iCount].Trim();
+//                if (l_lines[l_iCount] == null || l_lines[l_iCount] == string.Empty || l_lines[l_iCount] == " ") break;
+
+                l_lines[l_iCount] = l_lines[l_iCount].Trim();
                 //
                 if (l_lines[l_iCount].Contains(";"))
                 {
@@ -105,7 +114,7 @@ namespace RBVH_FORMULA.Control
                         || (l_lines[l_iCount].Contains("else") && !l_lines[l_iCount + 1].Contains("{"))
                         || (l_lines[l_iCount].Contains("else if") && !l_lines[l_iCount + 1].Contains("{")))
                     {
-                        log += "\n[StatementHandling][Error] The line" + (l_iCount+1).ToString() +" after IF/Else/ElseIf condition at: " + l_iCount.ToString() + " does not have the '{'" +
+                        log += "\n[StatementHandling][Error] The LINE " + (l_iCount+1).ToString() +" NEXT TO if/else/else-if condition at line: " + l_iCount.ToString() + " DOES NOT have the '{'" +
                                     Environment.NewLine + "Please correct the orginal file by REFERENCING (not updatd on this) at: " + strSavetFileNew;
                         return false;
                     }
@@ -236,7 +245,7 @@ namespace RBVH_FORMULA.Control
                 }
                 /// A < B < C < D < E < F< G < H < I < J
                 ///
-                g_OutComeValue[iLocal].outComeFormula = StatementProcess(g_OutComeValue[iLocal].outComeFormula);
+                g_OutComeValue[iLocal].outComeFormula = StatementProcess(g_OutComeValue[iLocal].outComeFormula,ref log);
                 g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = strPreviousOutCome == " " ? g_OutComeValue[iLocal].outComeFormula + ", " + "IntialValue" : g_OutComeValue[iLocal].outComeFormula + ", " + "Line_" + strPreviousOutCome;
                 
                 ///
@@ -244,17 +253,12 @@ namespace RBVH_FORMULA.Control
                 {   
                     ///
                     /// Case 1: Detected the "}" and level contain "A"
-                    /// 
-                    if ((previousLevel == "A"))
-                    {
-                        g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "'=" + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula;
-                        break;
-                    }
-                    else if ((l_lines[iLocal1].Contains("}") && g_IfElseDetectedForClosedBracket[iLocal1].IfElseLevelDetection == "A")) // for handling the else in level A
+                    ///                     
+                    if ((l_lines[iLocal1].Contains("}") && g_IfElseDetectedForClosedBracket[iLocal1].IfElseLevelDetection == "A")) // for handling the else in level A
                     {
                         previousLevel = g_IfElseDetectedForClosedBracket[iLocal1].IfElseLevelDetection; // it have to level "A"
-                        g_OutComeValue[iLocal].outComeFormula = StatementProcess(g_OutComeValue[iLocal].outComeFormula);
-                        g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = g_OutComeValue[iLocal].outComeFormula;
+                        g_OutComeValue[iLocal].outComeFormula = StatementProcess(g_OutComeValue[iLocal].outComeFormula, ref log);
+                        g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "'=" + g_OutComeValue[iLocal].outComeFormula;
                         break;
                     }
                     else if (l_lines[iLocal1].Trim().Contains("}")) // handle for "}" inside the loop
@@ -263,8 +267,7 @@ namespace RBVH_FORMULA.Control
                         if (string.Compare(currentLevel, previousLevel) < 0)
                         {
                             previousLevel = currentLevel; // update the level e.x C -> B                           
-                        }
-                        
+                        }                        
                     }
                     ///
                     /// Case 2: Detected the one of the conditions
@@ -280,12 +283,12 @@ namespace RBVH_FORMULA.Control
                            {
                                if(g_IfElseDetectedForIfAndOpenBracket[i].IfElseLevelDetection == "A")
                                {
-                                   g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForIfAndOpenBracket[i].IfElseContent + " = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                                   g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForIfAndOpenBracket[i].IfElseContent + ") = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                                    break;
                                }
                                else if(g_IfElseDetectedForElseIf[i].IfElseLevelDetection == "A")
                                {
-                                   g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForElseIf[i].IfElseContent + " = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                                   g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForElseIf[i].IfElseContent + ") = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                                    break;
                                }
                                
@@ -309,16 +312,16 @@ namespace RBVH_FORMULA.Control
 
                         if (currentLevel == previousLevel && bPreElseDetected == true) // else if and else the same level
                         {
-                            g_IfElseDetectedForElseIf[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent);
-                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForElseIf[iLocal1].IfElseContent + " = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                            g_IfElseDetectedForElseIf[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent, ref log);
+                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForElseIf[iLocal1].IfElseContent + ") = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                             bPreElseDetected = false;
                         }
                         else if (string.Compare(currentLevel, previousLevel) < 0) // if this line has the higher level e.x C-> B
                         {
-                            g_IfElseDetectedForElseIf[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent);
-                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForElseIf[iLocal1].IfElseContent + " = TRUE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                            g_IfElseDetectedForElseIf[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent, ref log);
+                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForElseIf[iLocal1].IfElseContent + ") = TRUE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                             previousLevel = currentLevel;
-                        }
+                        }                        
 
                     }
                     else if (l_lines[iLocal1].Contains("if") && l_lines[iLocal1 + 1].Contains("{") && !l_lines[iLocal1].Contains("else if"))
@@ -328,14 +331,14 @@ namespace RBVH_FORMULA.Control
 
                         if (currentLevel == previousLevel && bPreElseDetected == true) // else if and else the same level
                         {
-                            g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent);
-                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent + " = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                            g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent, ref log);
+                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent + ") = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                             bPreElseDetected = false;
                         }
                         else if (string.Compare(currentLevel, previousLevel) < 0) // if this line has the higher level e.x C-> B
                         {
-                            g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent);
-                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF(" + g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent + " = TRUE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                            g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent, ref log);
+                            g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent + ") = TRUE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                             previousLevel = currentLevel;
                         }
                        
@@ -346,7 +349,13 @@ namespace RBVH_FORMULA.Control
                     {
                         // do nothing
                      //   g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = g_OutComeValue[iLocal].outComeFormula;
-                    }                    
+                    }
+                    // breake the loop if the levelA reached
+                    if ((previousLevel == "A"))
+                    {
+                        g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "'=" + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula;
+                        break;
+                    }
                 }
                 //
                 g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = previousLevel == "A" ? g_OutComeValueFinal[iOutComeValueFinal].outComeFormula : "'=" + g_OutComeValue[iLocal].outComeFormula;
@@ -373,22 +382,188 @@ namespace RBVH_FORMULA.Control
         *             - else if condition needs to be handle
         *             - else condition to be handled
         ****************************************************************************/
-        static string ConditionProcess(string strCondition)
+        public string ConditionProcess(string strCondition, ref string log)
         {
+            strCondition = strCondition.Trim();
             StringBuilder l_strCondition = new StringBuilder(strCondition);
-            List<string> conditionSpecialList = new List<string>()           {"else if","else","if","true" ,"false","=="}; // to be updated follow the next version
-            List<string> conditionSpecialListReplaced = new List<string>()   {   ""    , ""   , "" , "TRUE","FALSE","="}; // to be updated follow the next version
-
+            List<string> conditionSpecialList = new List<string>()           {"else if","else","if","true" ,"false","==" , "!=" , "&&", "||", " ", "\t"}; // to be updated follow the next version
+            List<string> conditionSpecialListReplaced = new List<string>()   {   ""    , ""   , "" , "TRUE","FALSE","=" , "<>" , "&" , "|",  "" , "" }; // to be updated follow the next version
+                       
             for (int i = 0; i < conditionSpecialList.Count; i++)
             {
                 if(strCondition.Contains(conditionSpecialList[i]))
                 {
-                    l_strCondition.Replace(conditionSpecialList[i], conditionSpecialListReplaced[i]);
+                  
+                   l_strCondition.Replace(conditionSpecialList[i], conditionSpecialListReplaced[i]);
+                    
+                }
+            }
+            //Check whether this include the if-else condition or not
+            // If not, return here
+            strCondition = l_strCondition.ToString();
+            if (!strCondition.Contains("&") && !strCondition.Contains("|"))
+            {
+                if (strCondition[0] == '(' && strCondition[strCondition.Length - 1] == ')')
+                {
+                    //removeSpecialKey.Replace('(', ' ', 1, 1);
+                    strCondition = strCondition.Substring(1, strCondition.Length - 2);
+                }
+                return strCondition;
+            }          
+            
+            ///
+            /// Process the LOGICAL OPERATOR, Especially && and ||
+            ///
+            //var posOpen = strCondition.IndexOf("(");
+            //var posClose = strCondition.IndexOf(")");
+            //var subtring = strCondition.Substring(posOpen, posClose + 1);
+            //string[] getProcessed = strCondition.Split('&');
+            int iOpen = 0, iClose = 0, iLevel = 0, iGetString = 0;           
+            RBVH_FORMULA.Model.GlobalVariableHandling.ConditionLevelDetected[] posOpen = new Model.GlobalVariableHandling.ConditionLevelDetected[strCondition.Length];
+            RBVH_FORMULA.Model.GlobalVariableHandling.ConditionLevelDetected[] posClose = new Model.GlobalVariableHandling.ConditionLevelDetected[strCondition.Length];
+           
+            
+            /// Get all the position includes the '(' and ')' seperatly
+            for (int i = 0; i < strCondition.Length; i++)                                     
+            {
+                try
+                {
+                    if (strCondition[i] == '(')
+                    {
+                        posOpen[iOpen].position = i;
+                        posOpen[iOpen].level = iLevel;
+                        iOpen++;
+                        iLevel++;
+                    }
+                    else if (strCondition[i] == ')')
+                    {
+                        iLevel--;
+                        posClose[iClose].position = i;
+                        posClose[iClose].level = iLevel;
+                        iClose++;
+                        if (iLevel == 0) break;
+                    }
+                    //getStringBlock = strCondition.Substring(posOpen, posClose - posOpen + 1);
+                }
+                catch(Exception exp)
+                {
+                    log += "[Error][ConditionProcess] Error when find the syschonise '(' and ')' at line includes the content: " + strCondition.ToString() 
+                        + Environment.NewLine + exp.Message;
+                    return null;
+                }
+            }
+            RBVH_FORMULA.Model.GlobalVariableHandling.GetStringBlock[] getStringBlock = new Model.GlobalVariableHandling.GetStringBlock[iOpen];
+            // get the desired string and level
+            for (int i = 0; i < iOpen; i++)
+            {
+                for (int j = 0; j < iOpen; j++)
+                {
+                    if (posClose[j].position == 0)
+                    {
+                        i = posOpen.Length + 1;
+                        j = posClose.Length + 1;
+                        //break;
+                    }
+                    else if (posOpen[i].position < posClose[j].position
+                             && posOpen[i].level == posClose[j].level)
+                    {
+                      getStringBlock[iGetString].content = strCondition.Substring(posOpen[i].position, posClose[j].position - posOpen[i].position + 1);
+                      getStringBlock[iGetString].level = posOpen[i].level;
+                      iGetString++;
+                      break;                        
+                    }                    
+                }                               
+            }
+            // Last step: Handle the formula from Maxlevel to lower level
+            // get the Max level first
+            int maxLevel = 0;
+            string finalCondition = ""; 
+
+            for (int i = 0; i < getStringBlock.Length; i++)
+            {
+                if(maxLevel < getStringBlock[i].level)
+                {
+                    maxLevel = getStringBlock[i].level;
+                }
+                StringBuilder removeSpecialKey = new StringBuilder(getStringBlock[i].content);
+                if (getStringBlock[i].content[0] == '(' && getStringBlock[i].content[getStringBlock[i].content.Length - 1] == ')')
+                {
+                    //removeSpecialKey.Replace('(', ' ', 1, 1);
+                    getStringBlock[i].content = getStringBlock[i].content.Substring(1, getStringBlock[i].content.Length - 2);
+                }
+            }
+            //
+            for (int i = maxLevel; i >= 0; i--) //Hanlding form max to min (0)
+            {
+                for (int j = 0; j < getStringBlock.Length; j++)
+                {                                                         
+                    if (getStringBlock[j].level == i && (getStringBlock[j].content.Contains("&") || getStringBlock[j].content.Contains("|")))
+                    {
+                        try
+                        {
+                            if (getStringBlock[j].content.Contains("&"))
+                            {
+                                string[] charDivided = getStringBlock[j].content.Split('&'); // first: handle the & first
+                                if (charDivided.Length == 2)
+                                {
+                                    //finalCondition = "AND(" + charDivided[0] + "," + charDivided[1] + ")";
+                                    finalCondition = "AND(" + charDivided[0] + "," + charDivided[1] + ")";
+                                }
+                                else
+                                {
+                                    finalCondition = "AND(" + charDivided[charDivided.Length - 1] + "," + charDivided[charDivided.Length - 2] + ")";
+                                    for (int iRun = charDivided.Length - 3; iRun >= 0; iRun--)
+                                    {
+                                        finalCondition = "AND(" + charDivided[iRun] + "," + finalCondition + ")";
+                                    }
+                                }
+                                // Update the content in case of the string has mixed && and ||
+                               // getStringBlock[j].content = finalCondition;
+                            }                            
+                            if (getStringBlock[j].content.Contains("|"))
+                            {
+                                string[] charDivided = getStringBlock[j].content.Split('|'); // first: handle the & first
+                                if (charDivided.Length == 2)
+                                {
+                                    finalCondition = "OR(" + charDivided[0] + "," + charDivided[1] + ")";
+                                }
+                                else
+                                {
+                                    finalCondition = "OR(" + charDivided[charDivided.Length - 1] + "," + charDivided[charDivided.Length - 2] + ")";
+                                    for (int iRun = charDivided.Length - 3; iRun >= 0; iRun--)
+                                    {
+                                        finalCondition = "OR(" + charDivided[iRun] + "," + finalCondition + ")";
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception exp)
+                        {
+
+                        }
+                        // Update the change
+                        for (int iUpdate = 0; iUpdate < getStringBlock.Length; iUpdate++)
+                        {
+                            if (getStringBlock[iUpdate].content.Contains(getStringBlock[j].content))
+                            {
+                                StringBuilder updated = new StringBuilder(getStringBlock[iUpdate].content);
+                                //updated.Replace("(" + getStringBlock[j].content + ")", finalCondition); // if (strCondition[0] == '(' && strCondition[strCondition.Length - 1] == ')')
+                                //if (getStringBlock[iUpdate].content[0] == '(' && getStringBlock[iUpdate].content[getStringBlock[iUpdate].content.Length - 1] == ')')
+                                //{
+                                //    updated.Replace("(" + getStringBlock[j].content + ")", finalCondition);
+                                //}
+                                //else updated.Replace(getStringBlock[j].content, finalCondition);
+                               updated.Replace(getStringBlock[j].content, finalCondition);
+                                getStringBlock[iUpdate].content = updated.ToString();
+                            }
+                        }
+                    }   
+                    // 0 is root 
+                    finalCondition = getStringBlock[0].content;
                 }
             }
 
-
-            return l_strCondition.ToString();
+            return finalCondition;
         }
 
 
@@ -404,22 +579,29 @@ namespace RBVH_FORMULA.Control
         *             - else if condition needs to be handle
         *             - else condition to be handled
         ****************************************************************************/
-        static string StatementProcess(string strCondition)
+        public string StatementProcess(string strStatement, ref string log)
         {
-            StringBuilder l_strCondition = new StringBuilder(strCondition);
+            strStatement = strStatement.Trim();
+            StringBuilder l_strStatement = new StringBuilder(strStatement);
             List<string> conditionSpecialList = new List<string>()          { "true", "false", "==" }; // to be updated follow the next version
             List<string> conditionSpecialListReplaced = new List<string>()  { "TRUE", "FALSE", "=" }; // to be updated follow the next version
 
             for (int i = 0; i < conditionSpecialList.Count; i++)
             {
-                if (strCondition.Contains(conditionSpecialList[i]))
+                if (strStatement.Contains(conditionSpecialList[i]))
                 {
-                    l_strCondition.Replace(conditionSpecialList[i], conditionSpecialListReplaced[i]);
+                    l_strStatement.Replace(conditionSpecialList[i], conditionSpecialListReplaced[i]);
                 }
             }
+            // in case of
+            // A.min(B) -> MIN(A,B_)
+            // A.max(B) -> MAX(A,B)
+            if (strStatement.Contains(".min"))
+            {
+                
+            }
 
-
-            return l_strCondition.ToString();
+            return l_strStatement.ToString();
         }
 
         /**************************************************************************
@@ -535,8 +717,9 @@ namespace RBVH_FORMULA.Control
             //Console.WriteLine("Replacement String: {0}", noComments);
 
             string resultString = Regex.Replace(noComments, blankLine, string.Empty, RegexOptions.Multiline);
-           // string resultString = Regex.Replace(noComments, string.Empty, string.Empty, RegexOptions.Multiline);
-            // DEBUG
+           // string resultString = Regex.Replace(noComments, string.Empty, string.Empty, RegexOptions.Multiline);                     
+
+            // Write the result to file
             System.IO.File.WriteAllText(strSavetFileNew, resultString);
 
             // DEBUG  
@@ -550,6 +733,39 @@ namespace RBVH_FORMULA.Control
             return resultString;
         }
 
+     /**************************************************************************
+     *  Decsription:
+     *     Input: array of string
+     *     Output: - Handling the if-elseif condition to in a line only
+     ****************************************************************************/
+      private string[] conditionInALine(string[] lines)
+        {
+            int l_iLine = 0;
+            string[] l_Line = new string[lines.Length];
+          //
+            for (int iLine = 0; iLine < lines.Length - 1; iLine++)
+            {
+                lines[iLine] = lines[iLine].Trim();
+
+                if (lines[iLine].Contains("if") || lines[iLine].Contains("else if")) // check current line includes the if or else if and the next line not included the "{"
+                {
+                    if (lines[iLine + 1].Contains("{"))
+                    {
+                        l_Line[l_iLine] = lines[iLine];
+                        l_iLine++;
+                    }
+                    else lines[iLine + 1] = lines[iLine] + lines[iLine + 1];                                        
+                   // iLine++;
+                }
+                else
+                {
+                    l_Line[l_iLine] = lines[iLine];
+                    l_iLine++;
+                }
+            }
+
+            return l_Line;
+        }
 
     }
 }

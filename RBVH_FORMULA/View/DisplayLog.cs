@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -53,17 +54,25 @@ namespace RBVH_FORMULA.View
             bool bResult = false;
             const string TCSHEET_NAME = "Testcases";
 
+            RBVH_FORMULA.Control.FormulaProcess l_ControlProcess = new Control.FormulaProcess();
+            //DEBUG
+            //l_ControlProcess.ConditionProcess("if(((strA && strB) && strF) && (strC || (strD && strH)) && strK)", ref g_log);
+            //l_ControlProcess.ConditionProcess("if (    (crb_FbHydTargetRA < crb_FbToleratedDeltaAV)&& ((crb_FbRegenMax_woGradLim_woComp - crb_FbRegenTarget) > crb_FbHydTargetRA)&& (crb_FbHydTargetRAblind == 0))", ref g_log);
+            //l_ControlProcess.StatementProcess("ctWait_A +  vhctWait.min(C_vhctWaitMax) + vhctWaitMax_B", ref g_log);
+
             //
             Excel.Application xlExcelApp;
             Excel.Workbook xlWorkBookSrc;
             xlExcelApp = new Excel.Application();
             xlWorkBookSrc = xlExcelApp.Workbooks.Open(txtFormulaTD.Text.ToString());
-            xlExcelApp.Visible = true;
+            xlExcelApp.Visible = true;                                  
 
-            RBVH_FORMULA.Control.FormulaProcess l_ControlProcess = new Control.FormulaProcess();
             bResult = l_ControlProcess.StatementHandling(xlWorkBookSrc, TCSHEET_NAME, txtCode.Text.ToString(), ref g_log); //D:\THANGVUONG\Tool_2015\FORMULA_ESS2\FORMULA_ESS2\bin\Release\123.c
             //bResult = l_ControlProcess.StatementHandling(xlWorkBookSrc, TCSHEET_NAME, @"C:\Users\VV81HC\Documents\Visual Studio 2013\Projects\RBVH_FORMULA\RBVH_FORMULA\123.c", ref g_log);
             DEBUG(g_log);
+            DEBUG("-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*");
+            //  static string CurrentPath = Directory.GetCurrentDirectory();
+            DEBUG("\nSource file is updated there:" + Environment.NewLine + Directory.GetCurrentDirectory().ToString());
             DEBUG("-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*");
             if (bResult)
             {
@@ -101,7 +110,7 @@ namespace RBVH_FORMULA.View
             OpenFileDialog openFile = new OpenFileDialog();
             openFile.RestoreDirectory = true;
             openFile.DefaultExt = "C Source";
-            openFile.Filter = "C_Code_Template (*.c)|(*.c; *.txt) | All files (*.*)|*.*";
+            openFile.Filter = "Code (*.c)|*.c| All files (*.*)|*.*";
             openFile.CheckFileExists = true;
             openFile.CheckPathExists = true;
             if (openFile.ShowDialog() == DialogResult.OK)
