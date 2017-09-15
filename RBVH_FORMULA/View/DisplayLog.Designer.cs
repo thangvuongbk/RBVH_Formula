@@ -37,13 +37,14 @@
             this.btnSourceFileBrowser = new System.Windows.Forms.Button();
             this.btnTDBrowser = new System.Windows.Forms.Button();
             this.btnExit = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // logView
             // 
             this.logView.Location = new System.Drawing.Point(12, 122);
             this.logView.Name = "logView";
-            this.logView.Size = new System.Drawing.Size(627, 284);
+            this.logView.Size = new System.Drawing.Size(627, 277);
             this.logView.TabIndex = 0;
             this.logView.Text = "";
             this.logView.TextChanged += new System.EventHandler(this.myrichTextBox_TextChanged);
@@ -120,11 +121,23 @@
             this.btnExit.UseVisualStyleBackColor = true;
             this.btnExit.Click += new System.EventHandler(this.eventCancelClick);
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.ForeColor = System.Drawing.Color.Red;
+            this.label3.Location = new System.Drawing.Point(550, 406);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(105, 13);
+            this.label3.TabIndex = 9;
+            this.label3.Text = "Beta Version: 1.1";
+            // 
             // DisplayLog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(656, 421);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnTDBrowser);
             this.Controls.Add(this.btnSourceFileBrowser);
@@ -152,5 +165,6 @@
         private System.Windows.Forms.Button btnSourceFileBrowser;
         private System.Windows.Forms.Button btnTDBrowser;
         private System.Windows.Forms.Button btnExit;
+        private System.Windows.Forms.Label label3;
     }
 }

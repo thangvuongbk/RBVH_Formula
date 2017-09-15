@@ -61,9 +61,7 @@ namespace RBVH_FORMULA.Control
            
             // l_lines = conditionInALine(l_lines);
            // strSavetFileNew = l_lines.ToString();
-
-
-                        
+                 
             g_OutComeValue = new Model.GlobalVariableHandling.OutComeValue[l_lines.Length];
             g_IfElseDetectedForIfAndOpenBracket = new Model.GlobalVariableHandling.IfElseDetected[l_lines.Length];
             g_IfElseDetectedForClosedBracket = new Model.GlobalVariableHandling.IfElseDetected[l_lines.Length];
@@ -243,6 +241,7 @@ namespace RBVH_FORMULA.Control
                         }
                     }
                 }
+                ///
                 /// A < B < C < D < E < F< G < H < I < J
                 ///
                 g_OutComeValue[iLocal].outComeFormula = StatementProcess(g_OutComeValue[iLocal].outComeFormula,ref log);
@@ -261,6 +260,20 @@ namespace RBVH_FORMULA.Control
                         g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "'=" + g_OutComeValue[iLocal].outComeFormula;
                         break;
                     }
+                        ///Handle for this case
+                        ///if ()
+                        ///{
+                        ///.....
+                        ///}
+                        ///else if(...)
+                        ///{
+                        ///} ----> This point
+                        ///else
+                        ///{
+                        /// if()
+                        ///     {}
+                        ///}
+
                     else if (l_lines[iLocal1].Trim().Contains("}")) // handle for "}" inside the loop
                     {
                         currentLevel = g_IfElseDetectedForClosedBracket[iLocal1].IfElseLevelDetection;
@@ -276,29 +289,30 @@ namespace RBVH_FORMULA.Control
                     {
                         bPreElseDetected = true;
                         currentLevel = g_IfElseDetectedForElse[iLocal1].IfElseLevelDetection;
-                        //
+
                         if (currentLevel == "A")
-                       {
-                           for (int i = iLocal1; i >= 0; i--)
-                           {
-                               if(g_IfElseDetectedForIfAndOpenBracket[i].IfElseLevelDetection == "A")
-                               {
-                                   g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForIfAndOpenBracket[i].IfElseContent + ") = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
-                                   break;
-                               }
-                               else if(g_IfElseDetectedForElseIf[i].IfElseLevelDetection == "A")
-                               {
-                                   g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForElseIf[i].IfElseContent + ") = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
-                                   break;
-                               }
-                               
-                           }
-                       }
-                       //
+                        {
+                            for (int i = iLocal1; i >= 0; i--)
+                            {
+                                if (g_IfElseDetectedForIfAndOpenBracket[i].IfElseLevelDetection == "A")
+                                {
+                                    g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForIfAndOpenBracket[i].IfElseContent + ") = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                                    break;
+                                }
+                                else if (g_IfElseDetectedForElseIf[i].IfElseLevelDetection == "A")
+                                {
+                                    g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForElseIf[i].IfElseContent + ") = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
+                                    break;
+                                }
+
+                            }
+                        }                       
+
+                        //
                         if (string.Compare(currentLevel, previousLevel) >= 0)
                         {
                             // do not update the formula
-                            bPreElseDetected = false;
+                           // bPreElseDetected = false;
                         }
                         else
                         {
@@ -306,6 +320,7 @@ namespace RBVH_FORMULA.Control
                         }
 
                     }
+                        // Handle the elseif condition
                     else if (l_lines[iLocal1].Contains("else if") && l_lines[iLocal1 + 1].Contains("{") && l_lines[iLocal1 - 1].Contains("}"))
                     {
                         currentLevel = g_IfElseDetectedForElseIf[iLocal1].IfElseLevelDetection;
@@ -321,15 +336,15 @@ namespace RBVH_FORMULA.Control
                             g_IfElseDetectedForElseIf[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForElseIf[iLocal1].IfElseContent, ref log);
                             g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForElseIf[iLocal1].IfElseContent + ") = TRUE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                             previousLevel = currentLevel;
-                        }                        
-
+                        }                                               
+                        
                     }
+                        // Handle the if condition
                     else if (l_lines[iLocal1].Contains("if") && l_lines[iLocal1 + 1].Contains("{") && !l_lines[iLocal1].Contains("else if"))
                     {
-
                         currentLevel = g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseLevelDetection;
 
-                        if (currentLevel == previousLevel && bPreElseDetected == true) // else if and else the same level
+                        if (currentLevel == previousLevel && bPreElseDetected == true) // if and else the same level
                         {
                             g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent, ref log);
                             g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent + ") = FALSE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
@@ -340,7 +355,7 @@ namespace RBVH_FORMULA.Control
                             g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent = ConditionProcess(g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent, ref log);
                             g_OutComeValueFinal[iOutComeValueFinal].outComeFormula = "IF((" + g_IfElseDetectedForIfAndOpenBracket[iLocal1].IfElseContent + ") = TRUE," + g_OutComeValueFinal[iOutComeValueFinal].outComeFormula + ")";
                             previousLevel = currentLevel;
-                        }
+                        }                        
                        
                     }
 
